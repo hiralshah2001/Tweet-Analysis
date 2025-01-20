@@ -1,0 +1,38 @@
+- name: Deploy Flask and Streamlit Apps
+  hosts: localhost
+  tasks:
+    # Step 1: Ensure Python dependencies are installed
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ playbook_dir }}/requirements.txt"
+        virtualenv: "{{ playbook_dir }}/venv"
+      register: pip_output
+    - debug:
+        var: pip_output  # Logs the output of the pip installation
+
+    # Step 2: Ensure model file exists
+    - name: Ensure the model directory exists
+      file:
+        path: "{{ playbook_dir }}/model_directory"
+        state: directory
+
+    - name: Copy model file
+      copy:
+        src: "{{ playbook_dir }}/lstm_model.h5"
+        dest: "{{ playbook_dir }}/model_directory/lstm_model.h5"
+      register: copy_output
+    - debug:
+        var: copy_output  # Logs the output of the copy operation
+
+    # Step 3: Start Streamlit App
+    - name: Start Streamlit App
+      shell: |
+        source {{ playbook_dir }}/venv/bin/activate
+        nohup streamlit run {{ playbook_dir }}/streamlit_app.py > streamlit.log 2>&1 &
+      args:
+        chdir: "{{ playbook_dir }}"
+      register: streamlit_output
+    - debug:
+        var: streamlit_output  # Logs the output of the Streamlit execution
+
+

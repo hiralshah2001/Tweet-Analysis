@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Twitter Sentiment Analysis</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly JS -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background: linear-gradient(120deg, #f3f4f7, #ffffff);
+        }
+        .header {
+            background-color: #1DA1F2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary {
+            background-color: #1DA1F2;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0d8ce8;
+        }
+        .chart-container {
+            margin: 30px 0;
+            border-radius: 15px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Twitter Sentiment Analysis</h1>
+        <p>Analyze hashtags and uncover sentiment trends</p>
+    </div>
+
+    <div class="container mt-5">
+        <!-- Input Form -->
+        <div class="card p-4">
+            <form method="POST">
+                <h3 class="text-center mb-3">Analyze Hashtag</h3>
+                <div class="mb-3">
+                    <label for="hashtag" class="form-label">Enter Hashtag</label>
+                    <input type="text" class="form-control" id="hashtag" name="hashtag" placeholder="#YourHashtag" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Analyze</button>
+            </form>
+        </div>
+
+        {% if hashtag %}
+        <!-- Results Section -->
+        <div class="mt-5">
+            <h2 class="text-center">Results for: <span class="text-primary">{{ hashtag }}</span></h2>
+
+            {% if sentiment_summary %}
+            <!-- Sentiment Distribution Chart -->
+            <div class="chart-container">
+                <h3 class="text-center">Sentiment Distribution</h3>
+                <div id="sentimentChart"></div>
+                <script>
+                    const sentimentData = {{ sentiment_summary | tojson }};
+                    const sentimentLabels = Object.keys(sentimentData);
+                    const sentimentValues = Object.values(sentimentData);
+
+                    const traceSentiment = {
+                        x: sentimentLabels,
+                        y: sentimentValues,
+                        type: 'bar',
+                        marker: { color: ['#dc3545', '#ffc107', '#28a745'] } // Red, Yellow, Green
+                    };
+
+                    Plotly.newPlot('sentimentChart', [traceSentiment], {
+                        title: 'Sentiment Distribution',
+                        xaxis: { title: 'Sentiment' },
+                        yaxis: { title: 'Percentage (%)' },
+                        plot_bgcolor: '#f3f4f7',
+                        paper_bgcolor: '#ffffff',
+                        font: { family: 'Arial, sans-serif', size: 14 }
+                    });
+                </script>
+            </div>
+
+            <!-- Market Trend -->
+            <div class="mt-4">
+                <h3>Market Trend:</h3>
+                <p class="fs-4 text-info"><strong>{{ market_trend }}</strong></p>
+            </div>
+            {% else %}
+            <p class="text-danger text-center mt-4">No tweets found for this hashtag.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if tweets %}
+        <!-- Sample Tweets -->
+        <div class="card p-4 mt-5">
+            <h3 class="text-center">Sample Tweets</h3>
+            <ul class="list-group list-group-flush">
+                {% for tweet in tweets %}
+                <li class="list-group-item">{{ tweet }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if hashtag_wordcloud %}
+        <!-- Hashtag Frequency Chart -->
+        <div class="chart-container mt-5">
+            <h3 class="text-center">Top Hashtags</h3>
+            <div id="hashtagChart"></div>
+            <script>
+                const hashtagData = {{ hashtag_wordcloud | tojson }};
+                const hashtagLabels = Object.keys(hashtagData);
+                const hashtagFrequencies = Object.values(hashtagData);
+
+                const traceHashtags = {
+                    labels: hashtagLabels,
+                    values: hashtagFrequencies,
+                    type: 'pie',
+                    hole: 0.4,
+                    marker: {
+                        colors: ['#1DA1F2', '#17a2b8', '#ffc107', '#28a745', '#dc3545', '#6c757d']
+                    }
+                };
+
+                Plotly.newPlot('hashtagChart', [traceHashtags], {
+                    title: 'Hashtag Frequencies',
+                    plot_bgcolor: '#f3f4f7',
+                    paper_bgcolor: '#ffffff',
+                    font: { family: 'Arial, sans-serif', size: 14 }
+                });
+            </script>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 py-3">
+        <p>&copy; 2024 Twitter Sentiment Analysis | Made with ❤️</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
